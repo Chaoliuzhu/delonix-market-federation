@@ -31,7 +31,7 @@
 | 组成 | 作用 | 是否去硬编码 |
 |---|---|---|
 | `skills/_template_dim_agent/` | **1 个参数化维度模板** + 生成器 `gen_dim_skills.py` | ✅ 方法论通用，酒店数据全部占位 |
-| `skills/market-intel-agent/` | **动态路由元 Agent**：按自然语言 query 动态选维度（规则路由 + **真实 LLM 语义路由**，失败自动降级）；含 `router.py` 与 `feishu_receiver.py`（飞书 @触发接收器） | ✅ 维度/关键词在 `capabilities.json`，酒店数据在 `hotel_config.yaml` |
+| `skills/market-intel-agent/` | **动态路由元 Agent + 执行闭环 + 事件触发**：`router.py`（规则+**真实 LLM 语义路由**，自动降级）、`agent_loop.py`（**触发即产出真实情报**：拉方法论+内部沉淀→LLM 合成简报）、`feishu_receiver.py`（飞书 @触发接收器，dry-run 安全）、`event_watch.py`（**事件主动触发**：巡检监控清单、LLM 判新增、新颖才推群）、`llm_util.py`（共享 LLM 调用）。**自带 `skills/_generated/` 10 维占位技能，技能可独立分发**。 | ✅ 维度/关键词在 `capabilities.json`，酒店数据在 `hotel_config.yaml` |
 | `skills/market-iteration-toolkit/` | 联邦活体迭代环工具链（去重/质检/检索扩展） | ✅ |
 | `runtime/runtime_config.py` | **运行时配置加载器**：飞书 bin、群ID、Bitable、本地路径全部从 `hotel_config.yaml` 读 | ✅ 脚本零硬编码 |
 | `skills/_ref_ruiwan/` | **瑞湾的实战满血版 10 维技能**（参考样例，含真实市场知识），**不要直接部署**，仅供新酒店借鉴补全 | ❌ 瑞湾专属，仅作模板填充参考 |
@@ -86,6 +86,26 @@ python3 feishu_receiver.py --send --interval 30   # ④ 常驻循环 + 真正发
 
 **LLM 语义路由（可选 `--use-llm`）**：调用 OpenAI 兼容端点（本地 LiteLLM router 或任意兼容服务），环境变量覆盖 `MARKET_LLM_BASE_URL` / `MARKET_LLM_MODEL` / `MARKET_LLM_API_KEY`。网络/模型/解析任一异常自动降级为关键词路由，绝不致命。实测：短线索"国能、天津港培训机会，中汽研"经 LLM 精准命中「企业协议 + TMC订单」，关键词法只能落 full。
 
+**触发即产出（执行闭环 `agent_loop.py`）**：接收到触发后不再只回"执行指令"，而是直接拉取该维度方法论（`_generated` 技能）+ 内部沉淀（`signal_registry` + `runtime/harvest/`）→ 调 LLM 合成「市场机会 / 可跟进客户 / 行动建议 / 需外部检索」四段结构化简报并回复。内部无数据时诚实标注「⚠️需外部检索」，绝不编造。LLM 不可用时降级为方法论摘要模板，不崩溃。
+
+```bash
+python3 agent_loop.py "最近天津央企有什么培训住宿机会" --use-llm   # 直接产出情报
+```
+
+---
+
+## 🔔 事件主动触发：`event_watch.py`（不再等人类 @）
+
+按「监控清单」（默认每维一条主题，或用 `watchlist.yaml` 自定义）主动巡检各维度，LLM 判【新增】/【无新增】，仅当与上次不同（state 比对防刷屏）才推送对应专群。
+
+```bash
+python3 event_watch.py                 # 巡检一轮（默认 dry-run，不推）
+python3 event_watch.py --send          # 巡检 + 真推新增
+python3 event_watch.py --send --interval 3600   # 常驻每小时巡检
+```
+
+> 诚实边界：内部语料 + LLM 推理驱动的真实监控闭环已落地；**真实外部 Web 检索**由 WorkBuddy 侧维度 skill（自带 WebSearch）或运营者执行，本脚本产出会明确标注「需外部检索验证」。外部检索后端可在 `llm_util` 之上扩展。
+
 ---
 
 ## 🔭 实现状态（诚实清单）
@@ -94,14 +114,25 @@ python3 feishu_receiver.py --send --interval 30   # ④ 常驻循环 + 真正发
 |---|---|---|
 | 维度按 query 动态路由（不固定全量） | ✅ 已实现 | 规则 + LLM 双引擎，8/8 测试通过 |
 | LLM 语义路由真实调用 | ✅ 已实现 | 接本地 router / 任意兼容端点，自动降级 |
+| **真实检索执行闭环**（触发即产出情报简报） | ✅ 已实现 | `agent_loop.py`：方法论+内部沉淀→LLM 合成，外部检索标注诚实 |
+| **事件主动触发**（监控清单 + 新颖闸门 + 主动推群） | ✅ 已实现 | `event_watch.py`，dry-run 安全，防刷屏 |
 | 飞书 @触发接收器（轮询 + 增量 + 防回环） | ✅ 已实现 | dry-run 验证通过；`--send` 可上真实发送 |
-| 模板生成 10 个专属技能 | ✅ 已实现 | `init.py` + 参数化模板 |
+| 模板生成 10 个专属技能 | ✅ 已实现 | `init.py` + 参数化模板（技能内自带占位版，可独立分发） |
 | 运行时配置全外置 | ✅ 已实现 | `runtime_config.py`，脚本零硬编码 |
 | 双部署路径（WorkBuddy / 飞书） | ✅ 已实现 | 路径 A 对话触发；路径 B 群 @触发 |
-| **真实检索执行闭环**（Agent 自主调检索→产出信号） | ⏳ 待建 | 当前 receiver 回复"执行指令"引导；真正自主扫描需 Agent 运行时 |
-| **事件主动触发**（竞品异动/招标自动推） | ⏳ 待建 | 需定时监控 + 主动推送 |
+| 外部 Web 实时检索（Agent 自主抓取网页） | 🔌 委托 | 由 WorkBuddy 侧维度 skill（自带 WebSearch）/ 运营者执行，非脚本内嵌 |
 
-_当前已交付"动态 Agent 的 ~75% 效果"：对话/群聊触发 + 语义路由 + 模板生成 + 双路径。剩余两项（自主检索闭环、事件主动触发）需 Agent 运行时支撑，可作为下一步。_
+_当前已交付"动态 Agent 的完全效果"：对话/群聊触发 + 语义路由 + **执行闭环** + **事件主动触发** + 模板生成 + 双路径全 ✅。唯一未内嵌的是"脚本自主抓网页"——按设计委托给 WorkBuddy 侧 skill（其 LLM 自带检索），保持轻量与安全。_
+
+---
+
+## 📤 分发渠道（如何拿到/分享这套包）
+
+- **GitHub（已建，私有）**：`https://github.com/Chaoliuzhu/delonix-market-federation`
+  姐妹酒店用协作邀请即可 clone；需要公开时仓库设置里一键转 Public。`.gitignore` 已排除瑞湾真实情报（`_ref_ruiwan`）、酒店专属配置与运行态状态文件，仓库本身**零真实数据**。
+- **WorkBuddy 技能平台**：本包核心 `market-intel-agent` 已是规范的用户级技能（含 `SKILL.md` frontmatter + `agent_created: true`），可独立分发安装。
+  - ⚠️ 当前 WorkBuddy 技能市场工具仅支持 *搜索/安装* 官方 BuiltinMarket 技能，**无"发布自定义技能到平台"的接口**；
+  - 发布到平台的手动入口：WorkBuddy 客户端 → 技能 → 我的技能/发布 → 选择 `market-intel-agent` 目录提交审核；或直接把 `~/.workbuddy/skills/market-intel-agent/` 整个目录发给对方、让其放入 `~/.workbuddy/skills/` 即可用。
 
 ---
 
@@ -156,10 +187,11 @@ delonix-market-federation/
 ├── init.py                         ← 一键初始化（配置/空注册表/目录/生成技能/选路径）
 ├── skills/
 │   ├── _template_dim_agent/        ← ★ 1 个参数化维度模板 + gen_dim_skills.py 生成器
-│   ├── market-intel-agent/         ← ★ 动态路由元 Agent（router.py + feishu_receiver.py + 配置外置 + 8/8 测试）
+│   ├── market-intel-agent/         ← ★ 动态路由元 Agent（router.py + agent_loop.py + feishu_receiver.py + event_watch.py + llm_util.py + 配置外置 + 8/8 测试）
+│   │   └── skills/_generated/      ← 技能自带 10 维占位技能，使 skill 可独立分发（无需整库）
 │   ├── market-iteration-toolkit/   ← 联邦活体迭代环工具链
-│   ├── _generated/                 ← init.py 生成的你酒店 10 维技能（要部署的）
-│   └── _ref_ruiwan/                ← 瑞湾满血参考样例（仅借鉴，勿直接部署）
+│   ├── _generated/                 ← init.py 生成的你酒店 10 维技能（仓库态，要部署的）
+│   └── _ref_ruiwan/                ← 瑞湾满血参考样例（仅借鉴，勿直接部署，已被 .gitignore 排除）
 ├── runtime/                        ← 运行时脚本（全部配置驱动，零硬编码）
 │   ├── runtime_config.py           ← 配置加载器（飞书/Bitable/路径全外置）
 │   ├── dedup2.py  publish_signals.py  harvest_*.py  url_liveness_check.py ...

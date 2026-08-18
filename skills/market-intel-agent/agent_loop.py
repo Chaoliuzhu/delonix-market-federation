@@ -39,14 +39,24 @@ DIM_CN = {
     "six": "数字渠道(六)", "potentialsource": "潜在客源(八)",
     "broardsignal": "潜在广域(九)", "tmc": "TMC订单(十)",
 }
-GENERATED = os.path.join(HERE, "..", "_generated")            # skills/_generated
+GENERATED = os.path.join(HERE, "skills", "_generated")        # 技能自带（独立分发用）
+GENERATED_REPO = os.path.join(HERE, "..", "_generated")        # 仓库态（整库 clone 时）
 REPO_RUNTIME = os.path.join(HERE, "..", "..", "runtime")      # 仓库态 runtime
 
 
+def _methodology_dir(dim):
+    # 优先用 init.py 重新生成的（酒店专属），其次用技能自带占位（独立分发）
+    for base in (GENERATED_REPO, GENERATED):
+        p = os.path.join(base, f"market-{dim}-wb", "SKILL.md")
+        if os.path.exists(p):
+            return p
+    return None
+
+
 def _methodology(dim):
-    p = os.path.join(GENERATED, f"market-{dim}-wb", "SKILL.md")
-    if not os.path.exists(p):
-        return "(未找到该维度方法论文件，请先运行 init.py 生成 skills/_generated)"
+    p = _methodology_dir(dim)
+    if not p:
+        return "(未找到该维度方法论文件，请先运行 init.py 生成维度技能)"
     try:
         txt = open(p, encoding="utf-8").read()
     except Exception:
