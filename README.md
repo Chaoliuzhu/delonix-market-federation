@@ -37,7 +37,7 @@
 | `skills/_ref_ruiwan/` | **瑞湾的实战满血版 10 维技能**（参考样例，含真实市场知识），**不要直接部署**，仅供新酒店借鉴补全 | ❌ 瑞湾专属，仅作模板填充参考 |
 | `skills/_generated/` | `init.py` 跑完后**自动生成**的你酒店专属 10 维技能（这才是要部署的） | ✅ 由模板+配置注入 |
 
-**一句话**：克隆仓库 → 跑 `init.py` → 自动生成 `hotel_config.yaml` + 你酒店的 10 个维度技能 + 空注册表 → 复制 `skills/_generated/*` + 两个元技能到 `~/.workbuddy/skills/` 即可。
+**一句话**：克隆（或 **Use this template**）→ 跑 `init.py` → 自动生成配置 + 你酒店的 10 个维度技能 + 空注册表 + **自动部署到 `~/.workbuddy/skills/`** + 在 `harvest/` 生成历史资料占位 → 你只需按结尾清单补入历史数据即可。
 
 ---
 
@@ -128,41 +128,60 @@ _当前已交付"动态 Agent 的完全效果"：对话/群聊触发 + 语义路
 
 ## 📤 分发渠道（如何拿到/分享这套包）
 
-- **GitHub（已建，私有）**：`https://github.com/Chaoliuzhu/delonix-market-federation`
-  姐妹酒店用协作邀请即可 clone；需要公开时仓库设置里一键转 Public。`.gitignore` 已排除瑞湾真实情报（`_ref_ruiwan`）、酒店专属配置与运行态状态文件，仓库本身**零真实数据**。
+- **GitHub（已设为公开模板库 ✅）**：`https://github.com/Chaoliuzhu/delonix-market-federation`
+  姐妹酒店点 **「Use this template」** → 一键生成自己的副本 → clone → 跑 `init.py` 即完成部署（详见下方「🤝 姐妹酒店一键引入」）。
+  `.gitignore` 已排除瑞湾真实情报（`_ref_ruiwan`）、酒店专属配置与运行态状态文件，仓库本身**零真实数据**，可安全公开。
 - **WorkBuddy 技能平台**：本包核心 `market-intel-agent` 已是规范的用户级技能（含 `SKILL.md` frontmatter + `agent_created: true`），可独立分发安装。
   - ⚠️ 当前 WorkBuddy 技能市场工具仅支持 *搜索/安装* 官方 BuiltinMarket 技能，**无"发布自定义技能到平台"的接口**；
   - 发布到平台的手动入口：WorkBuddy 客户端 → 技能 → 我的技能/发布 → 选择 `market-intel-agent` 目录提交审核；或直接把 `~/.workbuddy/skills/market-intel-agent/` 整个目录发给对方、让其放入 `~/.workbuddy/skills/` 即可用。
 
 ---
 
+## 🤝 姐妹酒店一键引入（WorkBuddy 用户）
+
+1. 打开 `https://github.com/Chaoliuzhu/delonix-market-federation` → 点右上角 **「Use this template」** → 生成你酒店自己的副本仓库（或直接 clone 本库）。
+2. 装好 WorkBuddy（已装可跳过）。
+3. 在仓库目录跑**一条命令**完成部署：
+   ```bash
+   python3 init.py --hotel "你的酒店名" --geo "城市/区" --mode A      # 纯 WorkBuddy
+   # 或 --mode B 并附 --chat-tmc/--chat-two/--chat-seven（飞书群 chat_id）
+   ```
+   `init.py` 会：生成配置 → 生成你酒店 10 个维度技能 → **自动部署 12 个技能到 `~/.workbuddy/skills/`** → 在 `runtime/harvest/` 生成带说明的历史资料占位 → 打印「引导补入历史数据」清单。
+4. **按清单补历史数据**（决定情报是否精准，详见 `runtime/harvest/00_把历史资料放这里.md`）：
+   - P0 必交：协议单位清单 / 飞书群历史 / 酒店信息（已在配置）
+   - P1：客源台账、餐饮会议订单
+   - P2：竞品剪报、会员复购
+5. WorkBuddy 刷新/重启 → 对话 `@market-intel-agent 最近有什么央企培训机会` 即触发；情报随历史资料变准。
+
+> 不补历史数据系统也能跑框架，但情报不精准（去重退化、迭代核验弱）。**补完 P0 → 跑首轮 → 去重基线建立 → 情报才准。**
+
+---
+
 ## 📦 快速开始
 
 ```bash
-# 1. 克隆仓库
-git clone <your-repo> delonix-market-federation
+# 1. 克隆仓库（或用 Use this template 生成副本）
+git clone https://github.com/Chaoliuzhu/delonix-market-federation.git
 cd delonix-market-federation
 
-# 2. 一键初始化（选路径 A 或 B）→ 自动生成配置 + 空注册表 + 目录 + 你酒店的 10 个技能
+# 2. 一键初始化（选路径 A 或 B）→ 自动生成配置 + 空注册表 + 你酒店 10 个技能 + 自动部署到 WorkBuddy
 python3 init.py --hotel "XX酒店" --geo "城市/区" --mode A        # 或 --mode B
 #   路径 B 可附加：--chat-tmc oc_xxx --chat-two oc_yyy --chat-seven oc_zzz
 #   其余维度 chat 在生成的 hotel_config.yaml 里补齐
+#   （init.py 默认已把 12 个技能复制到 ~/.workbuddy/skills/，无需手动 cp；
+#     若用 --no-deploy 跳过，再手动复制下方三个目录）
 
-# 3. 放入你的历史资料
+# 3. ★ 引导补入历史数据（决定情报是否精准）
+#   把 P0~P2 资料放进 runtime/harvest/（每个文件顶部都有说明，见 00_把历史资料放这里.md）
 #   - 协议单位清单 → runtime/harvest/protocol_units.txt（每行一个）
-#   - 客源/订单 Excel → runtime/harvest/ 下对应 csv
-#   - 飞书群历史（路径 B）→ 运行 runtime/harvest_chat.py 拉取
+#   - 客源/订单 → runtime/harvest/*.csv
+#   - 飞书群历史（路径 B）→ 运行 runtime/harvest_chat.py <群ID> 拉取
 
-# 4. 部署技能到 WorkBuddy
-cp -R skills/_generated/* ~/.workbuddy/skills/
-cp -R skills/market-intel-agent ~/.workbuddy/skills/
-cp -R skills/market-iteration-toolkit ~/.workbuddy/skills/
-
-# 5. 验证动态路由（不依赖外部，先证明「动态」可用）
+# 4. 验证动态路由（不依赖外部，先证明「动态」可用）
 cd skills/market-intel-agent && python3 test_router.py
 #   → 8/8 场景路由通过
 
-# 6. 跑第一轮（路径 A 在 WorkBuddy 对话触发；路径 B 群里 @bot）
+# 5. 跑第一轮（路径 A 在 WorkBuddy 对话触发；路径 B 群里 @bot）
 ```
 
 ---
