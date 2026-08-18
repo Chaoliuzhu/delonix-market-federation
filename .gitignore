@@ -1,0 +1,16 @@
+# 真实客户情报（瑞湾满血技能，仅本地参考，禁止发布）
+skills/_ref_ruiwan/
+
+# 部署后生成的酒店专属配置（含真实群 ID/对接人，不入库）
+hotel_config.yaml
+skills/*/hotel_config.yaml
+
+# 运行态状态文件
+receiver_state.json
+event_watch_state.json
+skills/*/receiver_state.json
+skills/*/event_watch_state.json
+
+# Python 缓存
+__pycache__/
+*.pyc

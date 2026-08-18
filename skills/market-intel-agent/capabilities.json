@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "name": "德胧市场情报动态能力层",
+    "version": "0.1.0-dynamic",
+    "desc": "把 10 个硬编码维度抽象为可路由的能力；酒店专属数据（群ID/地理/对接人/Bitable）全部外置到 hotel_config.yaml，不写死在此处。",
+    "router": "rule_match + 可选 LLM 语义路由（见 router.py）"
+  },
+  "capabilities": [
+    {
+      "key": "one",
+      "name": "休闲度假",
+      "keywords": ["休闲", "度假", "亲子", "周边游", "周末游", "景区", "文旅", "旅游", "促销", "活动", "玩法"],
+      "scenes": ["本地文旅客流", "周边游套餐", "景区联动"],
+      "query_template": "休闲度假 文旅 周边游 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "two",
+      "name": "企业协议",
+      "keywords": ["企业协议", "协议公司", "央企", "国企", "集团客户", "差旅协议", "商务协议", "协议价"],
+      "scenes": ["企业协议签订", "央企集团客户", "商务差旅"],
+      "query_template": "企业协议 央企国企 集团客户 协议价 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "three",
+      "name": "会员增购",
+      "keywords": ["会员", "复购", "权益", "积分", "储值", "私域", "忠诚", "长会员"],
+      "scenes": ["会员复购提升", "会员权益设计", "私域运营"],
+      "query_template": "酒店会员 复购 权益 私域 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "four",
+      "name": "餐饮宴会",
+      "keywords": ["餐饮", "宴会", "婚宴", "答谢宴", "会议餐", "团餐", "餐厅", "美食", "酒席", "促销", "营销", "活动"],
+      "scenes": ["婚宴宴会", "餐饮营收", "餐厅推广"],
+      "query_template": "餐饮 宴会 婚宴 会议餐 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "five",
+      "name": "长住公寓",
+      "keywords": ["长住", "公寓", "月租", "长租", "居家", "服务式公寓", "外派", "驻场"],
+      "scenes": ["长住客源", "外派人员住宿", "服务式公寓"],
+      "query_template": "长住 服务式公寓 月租 外派 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "six",
+      "name": "数字渠道",
+      "keywords": ["数字渠道", "OTA", "直销", "官网", "小程序", "GEO", "AI搜索", "携程", "美团", "飞猪", "抖音", "促销", "营销", "活动", "竞品", "流量"],
+      "scenes": ["OTA运营", "直销官网", "AI搜索防御"],
+      "query_template": "数字渠道 OTA 直销 GEO AI搜索 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "seven",
+      "name": "会议会展(MICE)",
+      "keywords": ["会议", "会展", "展会", "奖励旅游", "MICE", "论坛", "年会", "大型活动"],
+      "scenes": ["会议会展订单", "展会客流", "奖励旅游"],
+      "query_template": "会议会展 MICE 展会 论坛 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "potential",
+      "name": "潜在客源",
+      "keywords": ["潜在客源", "客源池", "来源地", "获取渠道", "客群", "画像", "新客"],
+      "scenes": ["客源结构分析", "新客获取", "客群画像"],
+      "query_template": "潜在客源 客群画像 来源地 获取渠道 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "broad",
+      "name": "潜在广域",
+      "keywords": ["广域", "宏观", "政策", "城市规划", "交通", "基建", "产业", "区域经济", "红利"],
+      "scenes": ["宏观政策红利", "城市规划交通", "产业招商"],
+      "query_template": "宏观政策 城市规划 交通基建 产业红利 {geo} {year}",
+      "default_geo": "{geo}"
+    },
+    {
+      "key": "tmc",
+      "name": "TMC订单",
+      "keywords": ["TMC", "差旅", "协议订单", "订房平台", "企业差旅", "携程商旅", "中航服", "分贝通", "集采", "培训住宿"],
+      "scenes": ["央国企订房渠道", "差旅集采", "协议签订", "培训住宿"],
+      "query_template": "TMC 差旅管理 企业订房平台 集采 {geo} {year}",
+      "default_geo": "{geo}"
+    }
+  ]
+}

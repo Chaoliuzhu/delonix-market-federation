@@ -1,0 +1,42 @@
+# 酒店专属配置模板（每家兄弟酒店复制后填写，不要提交真实密钥）
+# 这是「动态 Agent 去硬编码」的核心：群ID/对接人/地理/路径全部外置到这里，
+# skill 与 runtime 脚本都从这里读，自身不再写死任何酒店专属数据。
+#
+# 用法：cp examples/hotel_config.example.yaml hotel_config.yaml 后逐项填写。
+
+# ── 酒店基本信息 ──
+hotel: "XX开元名都大酒店"          # 酒店名称（填入你的酒店）
+geo: "城市+区域"                   # 地理锚点中文，如 天津滨海新区
+anchor: "纬度,经度"                # 经纬度（销售半径计算用），如 39.00,117.70
+city: "城市"                       # 所属城市
+
+# ── 飞书：每个维度一个专群（路径 B 用；路径 A 纯 WorkBuddy 可留空）──
+# 值为群 chat_id；bot 必须在群里才能发消息/读历史
+feishu_chat_one: ""
+feishu_chat_two: ""
+feishu_chat_three: ""
+feishu_chat_four: ""
+feishu_chat_five: ""
+feishu_chat_six: ""
+feishu_chat_seven: ""
+feishu_chat_potential: ""
+feishu_chat_broad: ""
+feishu_chat_tmc: ""
+
+# ── 多维表格（bot 自建 base 获写权，或集团分配）──
+bitable_token: ""
+bitable_table: ""
+
+# ── 对接人（闭环责任人，按酒店实际填写）──
+owner_tmc: ""
+owner_corporate: ""
+owner_gm: ""
+
+# ── 本地沉淀池（相对本仓库根目录，init.py 会自动建好）──
+harvest_dir: "runtime/harvest"
+registry: "runtime/signal_registry.json"
+report_dir: "runtime"
+
+# ── 运行环境（可选，留空则自动探测 python3 / lark-cli）──
+python_bin: ""
+lark_bin: ""

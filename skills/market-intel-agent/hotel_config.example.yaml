@@ -1,0 +1,35 @@
+# 酒店专属配置模板（每家兄弟酒店复制后填写，不要提交真实密钥）
+# 这是「动态 Agent 去硬编码」的核心：瑞湾的群ID/对接人/地理全部外置到这里，
+# skill 本身不再写死任何酒店专属数据。
+
+# 酒店基本信息
+hotel: "天津瑞湾开元名都"          # 酒店名称
+geo: "天津滨海新区"                # 地理锚点中文
+anchor: "39.000983,117.709983"     # 经纬度（销售半径计算用）
+city: "天津"
+
+# 飞书：每个维度一个专群（或共用一个群改 dim 映射）
+# 值为群 chat_id；bot 必须在群里才能发消息
+feishu_chat_one: ""
+feishu_chat_two: ""
+feishu_chat_three: ""
+feishu_chat_four: ""
+feishu_chat_five: ""
+feishu_chat_six: ""
+feishu_chat_seven: ""
+feishu_chat_potential: ""
+feishu_chat_broad: ""
+feishu_chat_tmc: ""
+
+# 多维表格（bot 自建 base 获写权，或集团分配）
+bitable_token: ""
+bitable_table: ""
+
+# 对接人（闭环责任人，按酒店实际填写）
+owner_tmc: "孙雪艳"
+owner_corporate: "赵炳涛"
+owner_gm: "晁留柱"
+
+# 本地沉淀池
+harvest_dir: "/Users/ccc/WorkBuddy/market-seven-mice/_iteration/harvest"
+registry: "/Users/ccc/WorkBuddy/market-seven-mice/_iteration/signal_registry.json"
